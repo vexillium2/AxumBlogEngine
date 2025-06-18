@@ -14,7 +14,10 @@ lazy_static! {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Claims {
-    pub username: String,
+    pub sub: String,      // 用户ID 
+    pub username: String, // 用户名
+    pub role: String,     // 用户角色
+    pub exp: usize,       // 过期时间
 }
 
 pub fn generate_jwt(claims: &Claims) -> CustomResult<String> {

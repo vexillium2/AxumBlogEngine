@@ -12,10 +12,17 @@ axum-extra = { version = "0.9", features = ["typed-header"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-sea-orm = { version = "0.12", features = ["sqlx-mysql", "runtime-tokio-native-tls", "macros", "with-chrono", "with-json"], default-features = false }
+sea-orm = { version = "0.12", features = ["sqlx-sqlite", "runtime-tokio-native-tls", "macros", "with-chrono", "with-json"], default-features = false }
 tracing = "0.1"
 tokio = { version = "1", features = ["full"] }
 thiserror = "1.0"
 dotenv = "0.15"
 jsonwebtoken = "7"
 lazy_static = "1"
+
+bcrypt = "0.15"
+validator = { version = "0.16", features = ["derive"] }
+fake = { version = "2.4", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+

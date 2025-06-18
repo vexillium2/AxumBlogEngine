@@ -8,10 +8,24 @@ pub type CustomResult<T> = Result<T, CustomError>;
 pub enum CustomError {
     #[error("auth error")]
     AuthError,
+    
     #[error("jwt_error: {0}")]
     JWT(#[from] jsonwebtoken::errors::Error),
+
     #[error("db_error: {0}")]
     Db(#[from] sea_orm::DbErr),
+
+    #[error("邮箱已被注册")]
+    EmailAlreadyExists,
+    
+    #[error("用户名已被占用")]
+    UserAlreadyExists,
+    
+    #[error("用户不存在")]
+    UserNotFound,
+    
+    #[error("无权访问")]
+    Forbidden,
 }
 
 impl IntoResponse for CustomError {
