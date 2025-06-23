@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
+// 注册请求
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct RegisterRequest {
     #[validate(length(min = 3, max = 20))]
@@ -20,6 +21,7 @@ pub struct RegisterResponse {
     pub user_id: i32,
 }
 
+// 登录请求
 #[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct LoginRequest {
     pub username_or_email: String,
@@ -46,6 +48,24 @@ pub struct UserInfo {
 pub struct UserInfoResponse {
     pub success: bool,
     pub user: UserInfo,
+}
+
+// 更新用户请求
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct UpdateUserRequest {
+    pub user_id: i32,
+    #[validate(length(min = 3, max = 20))]
+    pub new_username: Option<String>,
+    #[validate(email)]
+    pub new_email: Option<String>,
+    #[validate(length(min = 6))]
+    pub new_password: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct BaseResponse {
+    pub success: bool,
+    pub message: Option<String>, // 可选消息字段
 }
 // #[derive(Serialize, Deserialize, Debug, Default)]
 // #[serde(default)]

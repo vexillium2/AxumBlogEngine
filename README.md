@@ -4,26 +4,31 @@
 
 ## 环境
 - Rust
-- MySQL 5.7以上
+- Sqlite 
 
 ## 使用方法
-1. 通过 `init.sql` 创建数据库表。
+1. 创建数据库并执行`sqlite3.exe blogdb.db ".read init.sql"`创建数据库表。
 2. 在 `.env` 设置环境变量 `DATABASE_URL` 和 `JWT_SECRET`。
-3. 执行 `cargo run`。
+3. 执行 `cargo run --bin server`。
 
 
 ## API
 
 ### 用户
-- /user/register
+- 用户注册：POST /user/register
 - /user/login
 
-### xxx
+### 博客
 > 需要在 header 中设置 JWT `Authorization: Bearer <JWT>`
-- /xxx/create
+- /articles/create
 - /xxx/search
 - /xxx/update
 - /xxx/delete
+
+## 开发帮助文档
+- [rust](https://photino.gitbooks.io/rust-notes/content/memory-safety.html)
+- [axum](https://docs.rs/axum/latest/axum/)
+- [seaorm](https://www.sea-ql.org/SeaORM/docs/introduction/tutorial/)
 
 ## 用 Redis 作为缓存
 1. 添加 [redis](https://github.com/redis-rs/redis-rs) 到 Cargo.toml，需要开启 feature `tokio-comp`。

@@ -1,5 +1,5 @@
 [package]
-name = "book_management"
+name = "axum_blog_engine"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,13 +8,13 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.7" }
 axum-extra = { version = "0.9", features = ["typed-header"] }
+tokio = { version = "1", features = ["full"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 sea-orm = { version = "0.12", features = ["sqlx-sqlite", "runtime-tokio-native-tls", "macros", "with-chrono", "with-json"], default-features = false }
 tracing = "0.1"
-tokio = { version = "1", features = ["full"] }
 thiserror = "1.0"
 dotenv = "0.15"
 jsonwebtoken = "7"

@@ -37,8 +37,9 @@ pub async fn register(
     // 生成JWT
     let token = generate_jwt(&Claims {
         sub: user.id.to_string(),
-        username: user.username.clone(),
+        username: user.username,
         role: user.role,
+        exp: (chrono::Utc::now() + chrono::Duration::days(30)).timestamp() as usize,
     })?;
 
     Ok(Json(RegisterResponse {
@@ -50,7 +51,7 @@ pub async fn register(
 
 /// 用户登录
 pub async fn login(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     Json(req): Json<LoginRequest>,
 ) -> CustomResult<Json<LoginResponse>> {
     req.validate()?;
@@ -72,23 +73,24 @@ pub async fn login(
         return Err(CustomError::AuthError);
     }
 
-    // 生成JWT
+    // 生成JWT - 使用引用或克隆字符串
     let token = generate_jwt(&Claims {
         sub: user.id.to_string(),
-        username: user.username,
-        role: user.role,
+        username: user.username.clone(),  // 使用.clone()复制字符串
+        role: user.role.clone(),         // 使用.clone()复制字符串
+        exp: (chrono::Utc::now() + chrono::Duration::days(30)).timestamp() as usize,
     })?;
 
     Ok(Json(LoginResponse {
         success: true,
         token,
         user_info: UserInfo {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-            created_at: user.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
-        },
+        id: user.id,
+        username: user.username,    // 这里可以继续使用原值
+        email: user.email,
+        role: user.role,            // 这里可以继续使用原值
+        created_at: user.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+    },
     }))
 }
 
@@ -112,18 +114,38 @@ pub async fn get_current_user(
     }))
 }
 
-/// 更新用户信息
 pub async fn update_user(
     claims: Claims,
+    State(state): State<AppState>,
     Json(req): Json<UpdateUserRequest>,
-) -> CustomResult<Json<BaseResponse>> {
+) -> Result<Json<BaseResponse>, CustomError> {
     req.validate()?;
 
-    // 只有管理员或用户本人可以修改
+    // 权限检查
     if claims.role != "admin" && claims.sub != req.user_id.to_string() {
         return Err(CustomError::Forbidden);
     }
 
-    // 实现更新逻辑...
-    Ok(Json(BaseResponse { success: true }))
+    // 实际更新逻辑
+    let mut update_data = user::ActiveModel {
+        id: sea_orm::Set(req.user_id),
+        ..Default::default()
+    };
+
+    if let Some(username) = req.new_username {
+        update_data.username = sea_orm::Set(username);
+    }
+    if let Some(email) = req.new_email {
+        update_data.email = sea_orm::Set(email);
+    }
+    if let Some(password) = req.new_password {
+        update_data.password_hash = sea_orm::Set(bcrypt::hash(password, state.config.bcrypt_cost)?);
+    }
+
+    user::update(update_data).await?;
+
+    Ok(Json(BaseResponse {
+        success: true,
+        message: Some("用户信息更新成功".to_string()),
+    }))
 }

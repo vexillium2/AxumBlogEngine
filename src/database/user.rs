@@ -88,6 +88,11 @@ pub async fn create(
     Ok(model.insert(conn).await?)
 }
 
+pub async fn update(user: ActiveModel) -> Result<Model, DbErr> {
+    let db = crate::database::orm::get_conn().await;
+    user.update(db).await
+}
+
 pub async fn find_by_username(username: &str) -> CustomResult<Option<Model>> {
     let conn = get_conn().await;
     Entity::find()
