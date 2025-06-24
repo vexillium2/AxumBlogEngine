@@ -1,4 +1,4 @@
-# 博客引擎
+# 基于Axum的轻量博客引擎
 
 [English](README.md) | 中文
 

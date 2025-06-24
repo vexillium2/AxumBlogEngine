@@ -4,4 +4,3 @@ Cargo.lock
 src/**/book.rs 
 *.db
 *.tmp
-~$.docx
