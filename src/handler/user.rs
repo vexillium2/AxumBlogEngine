@@ -76,8 +76,8 @@ pub async fn login(
     // 生成JWT - 使用引用或克隆字符串
     let token = generate_jwt(&Claims {
         sub: user.id.to_string(),
-        username: user.username.clone(),  // 使用.clone()复制字符串
-        role: user.role.clone(),         // 使用.clone()复制字符串
+        username: user.username.clone(),
+        role: user.role.clone(),
         exp: (chrono::Utc::now() + chrono::Duration::days(30)).timestamp() as usize,
     })?;
 
@@ -86,9 +86,9 @@ pub async fn login(
         token,
         user_info: UserInfo {
         id: user.id,
-        username: user.username,    // 这里可以继续使用原值
+        username: user.username,
         email: user.email,
-        role: user.role,            // 这里可以继续使用原值
+        role: user.role, 
         created_at: user.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
     },
     }))
