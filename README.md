@@ -2,7 +2,7 @@
 
 # 🚀 Axum Blog Engine
 
-<img src="https://img.shields.io/badge/version-v1.0.0-blue?style=for-the-badge" alt="Version">
+<img src="https://img.shields.io/badge/version-v2.0.0-blue?style=for-the-badge" alt="Version">
 <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
 <img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge" alt="Build">
 <img src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=for-the-badge" alt="Coverage">
