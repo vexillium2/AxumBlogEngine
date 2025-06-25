@@ -1,5 +1,6 @@
 /target
 Cargo.lock
 .idea
-.env
 src/**/book.rs 
+*.db
+*.tmp

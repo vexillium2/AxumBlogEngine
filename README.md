@@ -1,29 +1,64 @@
-# 博客引擎
+# 基于Axum的轻量博客引擎
 
 [English](README.md) | 中文
 
 ## 环境
 - Rust
-- MySQL 5.7以上
+- Sqlite 
 
 ## 使用方法
-1. 通过 `init.sql` 创建数据库表。
+1. 创建数据库并执行`sqlite3.exe blogdb.db ".read init.sql"`创建数据库表。
 2. 在 `.env` 设置环境变量 `DATABASE_URL` 和 `JWT_SECRET`。
-3. 执行 `cargo run`。
+3. 执行 `cargo run --bin server`。
 
 
 ## API
 
-### 用户
-- /user/register
-- /user/login
+后端接口使用/api/开头，例如`/api/user`。
 
-### xxx
+### 用户
+- /user/register        用户注册
+- /user/login           用户登录
+- /user/logout          用户登出
+- /user/get/me       获取登录用户信息
+- /user/update/me       更新个人信息
+- /user/get             获取用户信息（管理员）
+- /user/create          添加用户（管理员）
+- /user/update          更新用户信息（管理员）
+- /user/delete          删除用户信息（管理员）
+
+### 帖子
 > 需要在 header 中设置 JWT `Authorization: Bearer <JWT>`
-- /xxx/create
-- /xxx/search
-- /xxx/update
-- /xxx/delete
+- /post/create   创建文章
+- /post/search   搜索文章
+- /post/update   更新文章
+- /post/delete   删除文章
+- /post/get      获取文章（根据id）
+- /post/list     分页获取文章列表
+- /post/edit     编辑文章
+
+### 帖子收藏
+- /post_fav             收藏/取消收藏文章
+- /post_fav/my/list     获取本用户收藏的文章信息
+
+### 评论
+- /comment/create   创建评论
+- /comment/update   更新评论
+- /comment/delete   删除评论
+- /comment/get      获取评论（根据id）
+- /comment/list     分页获取评论列表
+
+## 后端框架
+- 数据层 database
+- 业务层 handler
+- 路由层 /bin/server.rs
+
+依赖位于 Cargo.toml 中。
+
+## 开发帮助文档
+- [rust](https://photino.gitbooks.io/rust-notes/content/memory-safety.html)
+- [axum](https://docs.rs/axum/latest/axum/)
+- [seaorm](https://www.sea-ql.org/SeaORM/docs/introduction/tutorial/)
 
 ## 用 Redis 作为缓存
 1. 添加 [redis](https://github.com/redis-rs/redis-rs) 到 Cargo.toml，需要开启 feature `tokio-comp`。
