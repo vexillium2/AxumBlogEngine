@@ -43,7 +43,14 @@
         />
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block">注册</button>
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-block"
+        @click="handleRegister"
+        :disabled="isLoading"
+      >
+        {{ isLoading ? '注册中...' : '注册' }}
+      </button>
     </form>
 
     <p class="text-center mt-3">
@@ -53,8 +60,9 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { defineProps, defineEmits } from "vue";
+import { userAPI } from "../api/index.js";
 
 const registerForm = reactive({
   username: "",
@@ -63,10 +71,54 @@ const registerForm = reactive({
   password_confirmation: "",
 });
 
-const emits = defineEmits(["switch-to-login"]);
+const isLoading = ref(false);
+const emits = defineEmits(["switch-to-login", "register-success"]);
 
 const emitSwitchToLogin = () => {
   emits("switch-to-login");
+};
+
+const handleRegister = async () => {
+  // 表单验证
+  if (!registerForm.username || !registerForm.email || !registerForm.password) {
+    alert("请填写所有必填字段");
+    return;
+  }
+  
+  if (registerForm.password !== registerForm.password_confirmation) {
+    alert("两次输入的密码不一致");
+    return;
+  }
+  
+  if (registerForm.password.length < 6) {
+    alert("密码长度至少为6位");
+    return;
+  }
+  
+  isLoading.value = true;
+  
+  try {
+    const response = await userAPI.register({
+      username: registerForm.username,
+      email: registerForm.email,
+      password: registerForm.password,
+    });
+    
+    alert("注册成功！请登录");
+    emits("register-success", response);
+    emits("switch-to-login");
+    
+    // 清空表单
+    Object.keys(registerForm).forEach(key => {
+      registerForm[key] = "";
+    });
+    
+  } catch (error) {
+    console.error("注册失败:", error);
+    alert(error.message || "注册失败，请重试");
+  } finally {
+    isLoading.value = false;
+  }
 };
 </script>
 

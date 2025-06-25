@@ -251,6 +251,11 @@ impl PostRepository {
             );
         }
 
+        // 根据作者ID过滤
+        if let Some(author_id) = req.author_id {
+            select = select.filter(Column::AuthorId.eq(author_id));
+        }
+
         // 仅获取已发布的文章 (如果指定)
         // req.published_only 默认值在 DTO 中已经处理，这里直接 unwrap
         if req.published_only.unwrap_or(true) { 

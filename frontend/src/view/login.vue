@@ -25,10 +25,11 @@
 
       <button
         type="submit"
-        class="btn btn-primary btn-block"
+        class="btn btn-primary btn-block login-btn"
         @click="handleLogin"
+        :disabled="isLoading"
       >
-        登录
+        {{ isLoading ? '登录中...' : '登录' }}
       </button>
     </form>
 
@@ -42,6 +43,7 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { defineProps, defineEmits } from "vue";
+import { userAPI } from "../api/index.js";
 
 // 表单数据
 const loginForm = reactive({
@@ -49,46 +51,39 @@ const loginForm = reactive({
   password: "",
 });
 
-const emits = defineEmits(["switch-to-register"]);
+const isLoading = ref(false);
+const emits = defineEmits(["switch-to-register", "login-success"]);
 
 const emitSwitchToRegister = () => {
   emits("switch-to-register");
 };
 
-// 用户账号数据
-const testUsers = [
-  {
-    id: 1,
-    username: "admin",
-    email: "admin@example.com",
-    password: "admin123", // 实际应用中密码应该加密存储
-  },
-  {
-    id: 2,
-    username: "tester",
-    email: "tester@example.com",
-    password: "test123",
-  },
-  {
-    id: 3,
-    username: "writer",
-    email: "writer@example.com",
-    password: "write123",
-  },
-];
+const handleLogin = async () => {
+  if (!loginForm.username || !loginForm.password) {
+    alert("请输入用户名和密码");
+    return;
+  }
 
-const handleLogin = () => {
-  // 查找匹配的用户
-  const user = testUsers.find(
-    (u) =>
-      u.username === loginForm.username && u.password === loginForm.password
-  );
-
-  if (user) {
+  isLoading.value = true;
+  
+  try {
+    const response = await userAPI.login({
+      username_or_email: loginForm.username,
+      password: loginForm.password,
+    });
+    
     // 登录成功，触发事件
-    emits("login-success", user);
-  } else {
-    alert("用户名或密码错误");
+    emits("login-success", response.user_info || response);
+    
+    // 清空表单
+    loginForm.username = "";
+    loginForm.password = "";
+    
+  } catch (error) {
+    console.error("登录失败:", error);
+    alert(error.message || "登录失败，请检查用户名和密码");
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
@@ -208,6 +203,26 @@ body {
 .btn:hover {
   opacity: 0.9;
   transform: translateY(-2px);
+}
+
+.login-btn {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+}
+
+.login-btn:hover {
+  box-shadow: 0 6px 16px rgba(79, 172, 254, 0.4);
+  transform: translateY(-3px);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 textarea.form-control {

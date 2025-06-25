@@ -27,7 +27,7 @@ fake = { version = "2.4", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 # 添加 tower-http 用于 HTTP 中间件，例如日志、CORS 等
-tower-http = { version = "0.5", features = ["trace"] } # "trace" feature 用于请求日志
+tower-http = { version = "0.5", features = ["trace", "cors"] } # "trace" feature 用于请求日志，"cors" 用于跨域支持
 
 # 添加 anyhow 用于更简洁的错误处理
 anyhow = "1.0"

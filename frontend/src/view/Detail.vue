@@ -32,7 +32,7 @@
         </span>
       </div>
 
-      <div class="post-content" v-html="currentPost.content"></div>
+      <div class="post-content" v-html="renderMarkdown(currentPost.content_markdown)"></div>
 
       <div class="post-actions mt-3">
         <button
@@ -60,17 +60,17 @@
       <div class="comment-list">
         <div
           class="comment-item"
-          v-for="comment in testComments"
+          v-for="comment in comments"
           :key="comment.id"
         >
           <div class="d-flex justify-between">
             <div>
-              <div class="comment-author">{{ comment.author }}</div>
+              <div class="comment-author">{{ comment.username || '匿名用户' }}</div>
               <div class="comment-date">
                 {{ formatDate(comment.created_at) }}
               </div>
             </div>
-            <div v-if="isAuthor(comment.author_id)">
+            <div v-if="isAuthor(comment.user_id)">
               <button
                 class="btn btn-sm btn-secondary"
                 @click="editComment(comment)"
@@ -112,8 +112,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-const isAuthenticated = ref(false);
+import { ref, defineProps, defineEmits, onMounted } from "vue";
+import { postAPI, commentAPI, favoriteAPI, userAPI, getToken } from "../api/index.js";
 
 const props = defineProps({
   postId: {
@@ -122,11 +122,74 @@ const props = defineProps({
   },
 });
 
-const currentPost = ref(null);
+const emit = defineEmits(["back-to-home"]);
 
-// 模拟从API获取文章详情
-const fetchPost = (id) => {
-  currentPost.value = testPosts.find((post) => post.id === id);
+const isAuthenticated = ref(false);
+
+const currentPost = ref(null);
+const currentUser = ref(null);
+const comments = ref([]);
+const isFavorited = ref(false);
+const isLoading = ref(false);
+
+const commentForm = ref({
+  content: "",
+  post_id: props.postId,
+  parent_id: null,
+});
+
+// 获取文章详情
+const fetchPost = async () => {
+  isLoading.value = true;
+  try {
+    const response = await postAPI.get(props.postId);
+    currentPost.value = response;
+    
+    // 检查用户认证状态
+    isAuthenticated.value = !!getToken();
+    
+    if (isAuthenticated.value) {
+      // 获取当前用户信息
+      try {
+        const userResponse = await userAPI.getMe();
+        currentUser.value = userResponse.user;
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      }
+      
+      // 检查收藏状态
+      await checkFavoriteStatus();
+    }
+    
+    // 获取评论
+    await fetchComments();
+  } catch (error) {
+    console.error('获取文章详情失败:', error);
+    alert('获取文章详情失败: ' + error.message);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 获取评论列表
+const fetchComments = async () => {
+  try {
+    const response = await commentAPI.getByPost(props.postId);
+    comments.value = response.comments || [];
+  } catch (error) {
+    console.error('获取评论失败:', error);
+  }
+};
+
+// 检查收藏状态
+const checkFavoriteStatus = async () => {
+  try {
+    const response = await favoriteAPI.list();
+    const favorites = response.favorites || [];
+    isFavorited.value = favorites.some(post => post.id === props.postId);
+  } catch (error) {
+    console.error('检查收藏状态失败:', error);
+  }
 };
 
 // 工具函数
@@ -135,17 +198,128 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("zh-CN", options);
 };
 
+// 简单的 Markdown 渲染函数
+const renderMarkdown = (markdown) => {
+  if (!markdown) return '';
+  
+  return markdown
+    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code>$1</code>')
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>');
+};
+
 const isAuthor = (authorId) => {
-  return isAuthenticated.value && user.value.id === authorId;
+  return currentUser.value && currentUser.value.id === authorId;
 };
 
 const isFavorite = (postId) => {
-  const post = testPosts.find((p) => p.id === postId);
-  return (
-    post &&
-    post.favorites &&
-    post.favorites.some((f) => f.user_id === user.value.id)
-  );
+  return isFavorited.value;
+};
+
+// 切换收藏
+const toggleFavorite = async (postId) => {
+  if (!isAuthenticated.value) {
+    alert('请先登录');
+    return;
+  }
+  
+  try {
+    await favoriteAPI.toggle(postId);
+    isFavorited.value = !isFavorited.value;
+  } catch (error) {
+    console.error('切换收藏状态失败:', error);
+    alert('操作失败: ' + error.message);
+  }
+};
+
+// 提交评论
+const handleComment = async () => {
+  if (!commentForm.value.content.trim()) {
+    alert("请输入评论内容");
+    return;
+  }
+  
+  if (!isAuthenticated.value) {
+    alert('请先登录');
+    return;
+  }
+
+  try {
+    await commentAPI.create({
+      content: commentForm.value.content,
+      post_id: props.postId,
+      parent_id: commentForm.value.parent_id,
+    });
+    
+    // 清空表单
+    commentForm.value.content = "";
+    commentForm.value.parent_id = null;
+    
+    // 重新获取评论列表
+    await fetchComments();
+  } catch (error) {
+    console.error('发表评论失败:', error);
+    alert('发表评论失败: ' + error.message);
+  }
+};
+
+// 编辑评论
+const editComment = (comment) => {
+  // 这里可以实现编辑评论的功能
+  const newContent = prompt('编辑评论:', comment.content);
+  if (newContent && newContent.trim() !== comment.content) {
+    updateComment(comment.id, newContent.trim());
+  }
+};
+
+// 更新评论
+const updateComment = async (commentId, content) => {
+  try {
+    await commentAPI.update(commentId, { content });
+    await fetchComments();
+  } catch (error) {
+    console.error('更新评论失败:', error);
+    alert('更新评论失败: ' + error.message);
+  }
+};
+
+// 删除评论
+const deleteComment = async (commentId) => {
+  if (confirm("确定要删除这条评论吗？")) {
+    try {
+      await commentAPI.delete(commentId);
+      await fetchComments();
+    } catch (error) {
+      console.error('删除评论失败:', error);
+      alert('删除评论失败: ' + error.message);
+    }
+  }
+};
+
+// 编辑文章
+const editPost = (postId) => {
+  // 这里应该导航到编辑页面
+  console.log("编辑文章:", postId);
+  // 可以通过事件通知父组件切换到编辑模式
+  emit('edit-post', postId);
+};
+
+// 删除文章
+const deletePost = async (postId) => {
+  if (confirm("确定要删除这篇文章吗？")) {
+    try {
+      await postAPI.delete(postId);
+      alert('文章删除成功');
+      emit('back-to-home');
+    } catch (error) {
+      console.error('删除文章失败:', error);
+      alert('删除文章失败: ' + error.message);
+    }
+  }
 };
 
 // 评论数据
@@ -243,7 +417,7 @@ const testPosts = [
 ];
 
 onMounted(() => {
-  fetchPost(props.postId);
+  fetchPost();
 });
 </script>
 

@@ -4,6 +4,9 @@
       <h2>{{ mode === "create" ? "新建文章" : "编辑文章" }}</h2>
       <div class="header-actions">
         <button class="btn btn-secondary" @click="cancel">取消</button>
+        <button class="btn btn-info" @click="backToDrafts" v-if="mode === 'edit' && postData && !postData.is_published">
+          <i class="fas fa-arrow-left"></i> 返回草稿箱
+        </button>
         <button class="btn btn-primary" @click="saveDraft">保存草稿</button>
         <button class="btn btn-success" @click="publish">发布</button>
       </div>
@@ -20,20 +23,13 @@
       </div>
 
       <div class="form-group">
-        <div class="tag-container">
-          <span class="tag" v-for="(tag, index) in article.tags" :key="index">
-            {{ tag }}
-            <span class="tag-remove" @click="removeTag(index)">×</span>
-          </span>
-          <input
-            type="text"
-            class="tag-input"
-            v-model="tagInput"
-            placeholder="添加标签..."
-            @keydown.enter="addTag"
-            @keydown.backspace="handleBackspace"
-          />
-        </div>
+        <label>分类</label>
+        <input
+          v-model="article.category"
+          @input="handleCategoryInput"
+          placeholder="请输入文章分类"
+          class="form-control"
+        />
       </div>
 
       <div class="form-group">
@@ -71,11 +67,11 @@
             @change="uploadCover"
             style="display: none"
           />
-          <span v-if="!article.cover" class="upload-text">
+          <span v-if="!article.cover_url" class="upload-text">
             <i class="icon-upload"></i> 上传封面图
           </span>
           <div v-else class="cover-preview">
-            <img :src="article.cover" alt="封面预览" />
+            <img :src="article.cover_url" alt="封面预览" />
             <button class="btn btn-danger btn-sm" @click="removeCover">
               移除
             </button>
@@ -83,30 +79,14 @@
         </label>
       </div>
 
-      <div class="form-group">
-        <label class="summary-label">文章摘要</label>
-        <textarea
-          class="summary-input"
-          v-model="article.summary"
-          placeholder="请输入文章摘要..."
-          rows="3"
-        ></textarea>
-      </div>
 
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="article.commentable" /> 允许评论
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="article.recommended" /> 推荐到首页
-        </label>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from "vue";
+import { ref, reactive, onMounted, nextTick, watch } from "vue";
+import { postAPI } from '../api/index.js';
 
 const props = defineProps({
   mode: {
@@ -119,21 +99,18 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["save", "cancel"]);
+const emit = defineEmits(["save", "cancel", "back-to-drafts"]);
 
 const editor = ref(null);
-const tagInput = ref("");
+const fileInput = ref(null);
 
 const article = reactive({
   id: null,
   title: "",
-  content: "",
-  summary: "",
-  tags: [],
-  cover: "",
-  published: false,
-  commentable: true,
-  recommended: false,
+  content_markdown: "",
+  cover_url: "",
+  is_published: false,
+  category: "",
 });
 
 const toolbarItems = [
@@ -156,20 +133,42 @@ const toolbarItems = [
 ];
 
 // 初始化编辑器内容
-onMounted(() => {
+onMounted(async () => {
   if (props.mode === "edit" && props.postData) {
-    Object.assign(article, props.postData);
-    nextTick(() => {
-      if (editor.value) {
-        editor.value.innerHTML = article.content;
-      }
-    });
+    try {
+      // 如果是编辑模式，从后端获取完整的文章数据
+      const fullPostData = await postAPI.get(props.postData.id);
+      
+      // 映射后端数据到前端格式
+      article.id = fullPostData.id;
+      article.title = fullPostData.title;
+      article.content_markdown = fullPostData.content_markdown;
+      article.category = fullPostData.category || '';
+      article.cover_url = fullPostData.cover_url || '';
+      article.is_published = fullPostData.is_published;
+      
+      nextTick(() => {
+        if (editor.value) {
+          editor.value.innerHTML = article.content_markdown;
+        }
+      });
+    } catch (error) {
+      console.error('获取文章详情失败:', error);
+      alert('获取文章详情失败: ' + error.message);
+      // 如果获取失败，使用传入的基本数据
+      Object.assign(article, props.postData);
+      nextTick(() => {
+        if (editor.value) {
+          editor.value.innerHTML = article.content_markdown;
+        }
+      });
+    }
   }
 });
 
 const onContentChange = () => {
   if (editor.value) {
-    article.content = editor.value.innerHTML;
+    article.content_markdown = editor.value.innerHTML;
   }
 };
 
@@ -188,23 +187,7 @@ const formatHeading = (e) => {
   e.target.value = "";
 };
 
-const addTag = () => {
-  const tag = tagInput.value.trim();
-  if (tag && !article.tags.includes(tag)) {
-    article.tags.push(tag);
-    tagInput.value = "";
-  }
-};
 
-const removeTag = (index) => {
-  article.tags.splice(index, 1);
-};
-
-const handleBackspace = (e) => {
-  if (tagInput.value === "" && article.tags.length > 0) {
-    article.tags.pop();
-  }
-};
 
 const uploadCover = (e) => {
   const file = e.target.files[0];
@@ -212,48 +195,92 @@ const uploadCover = (e) => {
     // 这里应该是实际上传逻辑，暂时使用本地URL
     const reader = new FileReader();
     reader.onload = (event) => {
-      article.cover = event.target.result;
+      article.cover_url = event.target.result;
     };
     reader.readAsDataURL(file);
   }
 };
 
 const removeCover = () => {
-  article.cover = "";
+  article.cover_url = "";
 };
 
-const saveDraft = () => {
-  article.published = false;
-  saveArticle();
+const saveDraft = async () => {
+  article.is_published = false;
+  await saveArticle();
 };
 
-const publish = () => {
-  article.published = true;
-  saveArticle();
+const publish = async () => {
+  article.is_published = true;
+  await saveArticle();
 };
 
-const saveArticle = () => {
+const saveArticle = async () => {
   if (!article.title.trim()) {
     alert("请输入文章标题");
     return;
   }
 
-  if (!article.content.trim()) {
+  if (!article.content_markdown.trim()) {
     alert("请输入文章内容");
     return;
   }
 
-  // 如果是编辑模式且没有ID，则生成一个临时ID
-  if (props.mode === "create" && !article.id) {
-    article.id = Date.now();
-  }
+  try {
+    const postData = {
+      title: article.title,
+      content_markdown: article.content_markdown,
+      category: article.category || '默认分类',
+      is_published: article.is_published,
+      cover_url: article.cover_url || null
+    };
 
-  emit("save", { ...article });
+    let result;
+    if (props.mode === "create") {
+      // 创建新文章
+      result = await postAPI.create(postData);
+      article.id = result.id;
+      alert(article.is_published ? "文章发布成功！" : "草稿保存成功！");
+    } else {
+      // 更新现有文章
+      result = await postAPI.update(article.id, postData);
+      alert(article.is_published ? "文章更新并发布成功！" : "草稿更新成功！");
+    }
+
+    emit("save", { ...article });
+  } catch (error) {
+    console.error('保存文章失败:', error);
+    alert('保存失败: ' + error.message);
+  }
 };
 
 const cancel = () => {
-  emit("cancel");
+  if (confirm("确定要取消编辑吗？未保存的内容将丢失。")) {
+    emit("cancel");
+  }
 };
+
+const backToDrafts = () => {
+  emit("back-to-drafts");
+};
+
+// 监听props变化，初始化文章数据
+watch(() => props.postData, (newData) => {
+  if (newData && Object.keys(newData).length > 0) {
+    Object.assign(article, {
+      title: newData.title || "",
+      content_markdown: newData.content_markdown || "",
+      category: newData.category || "",
+      cover_url: newData.cover_url || "",
+      is_published: newData.is_published || false,
+    });
+    
+    // 更新编辑器内容
+    if (editor.value) {
+      editor.value.innerHTML = newData.content_markdown || "";
+    }
+  }
+}, { immediate: true });
 
 const handlePaste = (e) => {
   e.preventDefault();
@@ -500,5 +527,19 @@ const handlePaste = (e) => {
 
 .icon-upload:before {
   content: "↑";
+}
+
+.btn-success {
+  background-color: #52c41a;
+  color: white;
+}
+
+.btn-info {
+  background-color: #1890ff;
+  color: white;
+}
+
+.btn-info:hover {
+  background-color: #40a9ff;
 }
 </style>

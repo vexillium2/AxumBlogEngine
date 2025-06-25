@@ -163,11 +163,33 @@ pub async fn get_posts_list_and_search(
     State(state): State<AppState>,
     Query(mut req): Query<PostListRequest>, // 使用 Query 提取查询参数
 ) -> CustomResult<Json<PostListResponse>> {
-    // 如果是普通用户访问，确保只获取已发布的文章
-    if auth_user.is_none() || (auth_user.is_some() && auth_user.as_ref().unwrap().0.role != "admin") {
-        req.published_only = Some(true); // 强制设置为 true
+    // 权限控制逻辑
+    match &auth_user {
+        None => {
+            // 未认证用户只能看已发布的文章，且不能指定作者
+            req.published_only = Some(true);
+            req.author_id = None;
+        },
+        Some(user) => {
+            if user.0.role == "admin" {
+                // 管理员可以查看所有文章，published_only 按请求参数决定
+            } else {
+                // 普通用户的权限控制
+                if let Some(author_id) = req.author_id {
+                    // 如果指定了作者ID，只能查看自己的文章（包括草稿）
+                    if author_id.to_string() == user.0.sub {
+                        // 查看自己的文章，可以包含草稿
+                    } else {
+                        // 查看别人的文章，只能看已发布的
+                        req.published_only = Some(true);
+                    }
+                } else {
+                    // 没有指定作者ID，只能看已发布的文章
+                    req.published_only = Some(true);
+                }
+            }
+        }
     }
-    // 如果是管理员访问，published_only 按照请求参数来决定（默认为 true）
 
     let (posts_info, total_pages, current_page, total_posts) = 
         state.post_repo.get_paginated_posts(req).await?;
@@ -186,11 +208,8 @@ pub async fn get_posts_list_and_search(
 /// 此函数将所有文章相关的路由组合起来，方便在 `src/bin/server.rs` 中集成。
 pub fn post_routes() -> Router<AppState> {
     Router::new()
-        .route("/", post(create_post))                  // POST /posts (创建文章)
-        .route("/:id", get(get_post_by_id))             // GET /posts/:id (获取文章详情)
-        .route("/:id", put(update_post))                // PUT /posts/:id (更新文章)
-        .route("/:id", delete(delete_post))             // DELETE /posts/:id (删除文章)
-        .route("/", get(get_posts_list_and_search))    // GET /posts (获取文章列表/搜索)
+        .route("/", get(get_posts_list_and_search).post(create_post))  // GET /posts (获取文章列表/搜索) 和 POST /posts (创建文章)
+        .route("/:id", get(get_post_by_id).put(update_post).delete(delete_post))  // GET/PUT/DELETE /posts/:id
         // 注意：/post/edit 被合并到 /posts/:id 的 PUT 请求中，符合 RESTful 风格
         // /post/search 逻辑也被合并到 /posts 的 GET 请求中，通过 Query 参数实现
 }

@@ -19,9 +19,23 @@
         <a
           href="#"
           class="nav-link"
+          @click.prevent="currentView = 'drafts'"
+          v-if="isAuthenticated"
+          >草稿箱</a
+        >
+        <a
+          href="#"
+          class="nav-link"
           @click.prevent="currentView = 'favorites'"
           v-if="isAuthenticated"
           >收藏</a
+        >
+        <a
+          href="#"
+          class="nav-link"
+          @click.prevent="currentView = 'create-post'"
+          v-if="isAuthenticated"
+          >写文章</a
         >
       </div>
 
@@ -31,7 +45,7 @@
       </div>
 
       <div class="auth-buttons" v-else>
-        <span class="nav-link">欢迎, {{ user.username }}</span>
+        <span class="user-welcome">欢迎, {{ user.username }}</span>
         <button class="btn btn-danger" @click="logout">登出</button>
       </div>
     </div>
@@ -70,11 +84,25 @@
     v-if="currentView === 'posts'"
     :userId="user?.id"
     @back-to-home="currentView = 'home'"
+    @view-post="handleViewPost"
+  />
+  <Drafts
+    v-if="currentView === 'drafts'"
+    :userId="user?.id"
+    @back-to-home="currentView = 'home'"
+    @view-post="handleViewPost"
   />
   <Favorites
     v-if="currentView === 'favorites'"
     :userId="user?.id"
     @back-to-home="currentView = 'home'"
+    @view-post="handleViewPost"
+  />
+  <Edit
+    v-if="currentView === 'create-post'"
+    mode="create"
+    @save="handlePostSave"
+    @cancel="currentView = 'home'"
   />
 
   <div>
@@ -109,8 +137,11 @@ import Login from "./login.vue";
 import Register from "./register.vue";
 import Detail from "./Detail.vue";
 import Post from "./Post.vue";
+import Drafts from "./Drafts.vue";
 import Favorites from "./favorites.vue";
-import { ref, computed, watch } from "vue";
+import Edit from "./Edit.vue";
+import { ref, computed, watch, onMounted } from "vue";
+import { userAPI, getToken, clearToken } from "../api/index.js";
 
 const user = ref(null); // 存储登录用户信息
 const isAuthenticated = ref(false);
@@ -118,6 +149,28 @@ const currentView = ref("home");
 const currentPostId = ref(null); // 存储当前查看的文章ID
 const isRegister = ref(false);
 const isLogin = ref(false);
+
+// 检查用户认证状态
+const checkAuthStatus = async () => {
+  const token = getToken();
+  if (token) {
+    try {
+      const userData = await userAPI.getMe();
+      user.value = userData;
+      isAuthenticated.value = true;
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      clearToken();
+      isAuthenticated.value = false;
+      user.value = null;
+    }
+  }
+};
+
+// 组件挂载时检查认证状态
+onMounted(() => {
+  checkAuthStatus();
+});
 
 // 切换到注册弹窗
 const switchToRegister = () => {
@@ -151,8 +204,17 @@ const handleLoginSuccess = (userData) => {
 
 // 登出功能
 const logout = () => {
+  clearToken();
   isAuthenticated.value = false;
   user.value = null;
+  currentView.value = 'home';
+};
+
+// 处理文章保存
+const handlePostSave = (articleData) => {
+  console.log('文章保存成功:', articleData);
+  // 保存成功后跳转到我的文章页面
+  currentView.value = 'posts';
 };
 </script>
 
@@ -161,22 +223,32 @@ const logout = () => {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 :root {
-  --primary: #4facfe;
-  --secondary: #a777e3;
-  --success: #43e97b;
-  --danger: #ff5858;
-  --warning: #f09819;
-  --dark: #2c3e50;
-  --light: #f8f9fa;
-  --gray: #6c757d;
+  --primary: #ff5722;
+  --primary-light: #ff7043;
+  --primary-dark: #d84315;
+  --secondary: #2196f3;
+  --secondary-light: #42a5f5;
+  --success: #4caf50;
+  --danger: #f44336;
+  --warning: #ff9800;
+  --dark: #212121;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-light: #999999;
+  --border-color: #e0e0e0;
+  --bg-color: #fafafa;
+  --card-bg: #ffffff;
+  --shadow-light: rgba(0, 0, 0, 0.04);
+  --shadow-medium: rgba(0, 0, 0, 0.08);
+  --shadow-heavy: rgba(0, 0, 0, 0.12);
 }
 
 body {
-  background-color: #f5f7fa;
-  color: var(--dark);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
   line-height: 1.6;
 }
 
@@ -196,13 +268,14 @@ body {
 
 /* 导航栏样式 */
 .navbar {
-  background: linear-gradient(to right, var(--primary), var(--secondary));
-  color: white;
-  padding: 15px 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  padding: 16px 0;
+  box-shadow: 0 2px 4px var(--shadow-light);
   position: sticky;
   top: 0;
   z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .navbar-container {
@@ -212,83 +285,125 @@ body {
 }
 
 .logo {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
   text-decoration: none;
-  color: white;
+  color: var(--primary);
+  transition: color 0.2s ease;
+}
+
+.logo:hover {
+  color: var(--primary-dark);
 }
 
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: 24px;
 }
 
 .nav-link {
-  color: white;
+  color: var(--text-primary);
   text-decoration: none;
   font-weight: 500;
-  transition: opacity 0.3s;
+  font-size: 0.875rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-  opacity: 0.8;
+  color: var(--primary);
+  background: rgba(255, 87, 34, 0.08);
 }
 
 .auth-buttons {
   display: flex;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-welcome {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
 }
 
 /* 按钮样式 */
 .btn {
   padding: 8px 16px;
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  background: var(--card-bg);
+  color: var(--text-primary);
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background: var(--primary);
   color: white;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
 }
 
 .btn-secondary {
-  background-color: var(--secondary);
+  background: var(--secondary);
   color: white;
+  border-color: var(--secondary);
+}
+
+.btn-secondary:hover {
+  background: var(--secondary-light);
+  border-color: var(--secondary-light);
 }
 
 .btn-success {
-  background-color: var(--success);
+  background: var(--success);
   color: white;
+  border-color: var(--success);
 }
 
 .btn-danger {
-  background-color: var(--danger);
+  background: var(--danger);
   color: white;
+  border-color: var(--danger);
 }
 
 .btn-outline {
-  background-color: transparent;
-  border: 1px solid white;
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-outline:hover {
+  background: var(--primary);
   color: white;
 }
 
 .btn:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
+  box-shadow: 0 2px 4px var(--shadow-medium);
 }
-/* 新增搜索框样式 */
+/* 搜索框样式 */
 .search-container {
-  background-color: white;
-  padding: 20px 0;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
+  background: var(--card-bg);
+  padding: 16px 0;
+  box-shadow: 0 1px 3px var(--shadow-light);
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .search-box {
@@ -296,48 +411,44 @@ body {
   max-width: 600px;
   margin: 0 auto;
   display: flex;
-  border-radius: 30px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px var(--shadow-light);
 }
 
 .search-input {
   flex: 1;
-  padding: 12px 20px;
+  padding: 12px 16px;
   border: none;
-  background-color: #f5f7fa;
-  font-size: 1rem;
+  background: var(--card-bg);
+  font-size: 0.875rem;
   outline: none;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
-  background-color: white;
   box-shadow: inset 0 0 0 2px var(--primary);
 }
 
 .search-button {
-  background: linear-gradient(to right, var(--primary), var(--secondary));
+  background: var(--primary);
   color: white;
   border: none;
-  padding: 0 20px;
+  padding: 0 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .search-button:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
+  background: var(--primary-dark);
 }
 
 .search-button svg {
-  transition: transform 0.3s;
-}
-
-.search-button:hover svg {
-  transform: scale(1.1);
+  width: 16px;
+  height: 16px;
 }
 </style>

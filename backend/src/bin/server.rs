@@ -8,6 +8,8 @@ use tracing::{debug, info, error, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use sea_orm::{DatabaseConnection, ConnectOptions};
 use anyhow::Result; // 用于 main 函数的错误处理
+use tower_http::cors::{CorsLayer, Any};
+use axum::http::Method;
 
 // 从 axum_blog_engine 库导入 AppState 和 Config
 use axum_blog_engine::{AppState, Config};
@@ -107,22 +109,35 @@ async fn main() -> Result<()> {
     info!("应用状态初始化完成");
 
     // 5. 构建 Axum 路由 (遵循 RESTful 风格)
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .allow_headers(Any);
+
     let app = Router::new()
-        // 用户相关路由
-        .nest("/users", user_routes())
-        // 帖子相关路由
-        .nest("/posts", 
-            post_routes() // 帖子的主路由（例如 /posts, /posts/:id）
-                // 将评论列表路由嵌套到特定文章 ID 下 (GET /posts/:post_id/comments)
-                // 注意：post_comments_routes 专门处理 /posts/:id/comments 这种子路由
-                .nest("/:post_id/comments", post_comments_routes()) 
+        // API 路由前缀
+        .nest("/api", Router::new()
+            // 用户相关路由
+            .nest("/user", user_routes())
+            // 帖子相关路由
+            .nest("/post", post_routes())
+            // 文章评论路由 (嵌套在文章路由下)
+            .nest("/post/:post_id/comments", post_comments_routes())
+            // 独立的评论资源路由 (例如 POST /comments, GET /comments/:id)
+            .nest("/comment", comment_routes())
+            // 收藏相关路由
+            .nest("/post_fav", favorite_routes()) // 你的 API 路径是 /post_fav
         )
-        // 独立的评论资源路由 (例如 POST /comments, GET /comments/:id)
-        .nest("/comments", comment_routes())
-        // 收藏相关路由
-        .nest("/post_fav", favorite_routes()) // 你的 API 路径是 /post_fav
+        // 添加 CORS 中间件
+        .layer(cors)
         // 可以添加其他全局中间件，例如 TraceLayer 用于请求日志
-        // .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(app_state); // 注入应用程序状态
 
     debug!("路由配置完成");

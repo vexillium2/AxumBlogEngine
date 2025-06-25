@@ -190,6 +190,7 @@ pub struct PostListRequest {
     pub category: Option<String>, // 按分类过滤
     pub query: Option<String>,   // 搜索关键词
     pub published_only: Option<bool>, // 只看已发布的文章，管理员可能查看所有
+    pub author_id: Option<i32>, // 按作者过滤，用于草稿箱功能
 }
 
 // 辅助函数：提供默认值

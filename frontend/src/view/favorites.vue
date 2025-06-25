@@ -39,66 +39,56 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { favoriteAPI, getToken } from "../api/index.js";
 
 const props = defineProps({
   userId: {
     type: Number,
-    required: true,
+    required: false,
   },
 });
 
-const emit = defineEmits(["back-to-home"]);
+const emit = defineEmits(["back-to-home", "view-post"]);
 
 // 模拟收藏文章数据
 const favoritePosts = ref([]);
 
 // 获取用户收藏
-const fetchFavorites = () => {
-  // 这里应该是API调用，我们暂时使用测试数据
-  const allPosts = [
-    {
-      id: 1,
-      title: "Vue.js入门指南",
-      author: "admin",
-      excerpt: "本文介绍Vue.js的基本概念和使用方法...",
-      created_at: "2023-05-15T09:30:00Z",
-      favorites: [{ user_id: 2 }, { user_id: 3 }],
-    },
-    {
-      id: 2,
-      title: "现代前端开发工具链",
-      author: "tester",
-      excerpt: "探讨现代前端开发中常用的工具和技术栈...",
-      created_at: "2023-06-02T14:15:00Z",
-      favorites: [{ user_id: 1 }],
-    },
-    {
-      id: 4,
-      title: "响应式设计技巧",
-      author: "admin",
-      excerpt: "如何创建适应各种设备的响应式网页设计...",
-      created_at: "2023-06-18T16:45:00Z",
-      favorites: [{ user_id: 2 }, { user_id: 3 }],
-    },
-  ];
-
-  favoritePosts.value = allPosts.filter((post) =>
-    post.favorites.some((fav) => fav.user_id === props.userId)
-  );
+const fetchFavorites = async () => {
+  try {
+    // 检查用户认证状态
+    if (!getToken()) {
+      console.warn('用户未登录，无法获取收藏列表');
+      favoritePosts.value = [];
+      return;
+    }
+    
+    const response = await favoriteAPI.list();
+    favoritePosts.value = response.favorites || [];
+  } catch (error) {
+    console.error('获取收藏列表失败:', error);
+    alert('获取收藏列表失败: ' + error.message);
+    favoritePosts.value = [];
+  }
 };
 
 // 查看文章
 const viewPost = (postId) => {
-  // 这里应该导航到文章详情页
-  console.log("查看文章:", postId);
+  // 通知父组件切换到详情页
+  emit('view-post', postId);
 };
 
 // 取消收藏
-const toggleFavorite = (postId) => {
+const toggleFavorite = async (postId) => {
   if (confirm("确定要取消收藏吗？")) {
-    favoritePosts.value = favoritePosts.value.filter(
-      (post) => post.id !== postId
-    );
+    try {
+      await favoriteAPI.toggle(postId);
+      // 重新获取收藏列表
+      await fetchFavorites();
+    } catch (error) {
+      console.error('取消收藏失败:', error);
+      alert('取消收藏失败: ' + error.message);
+    }
   }
 };
 
