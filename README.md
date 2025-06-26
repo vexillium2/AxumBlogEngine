@@ -124,11 +124,8 @@
 
 <div align="center">
 
-### 🌟 在线演示
+### 🌟 页面展示
 
-**[🔗 Live Demo](https://your-demo-site.com)** | **[📱 移动端预览](https://your-demo-site.com/mobile)**
-
-*用户名: `demo` | 密码: `demo123`*
 
 </div>
 
