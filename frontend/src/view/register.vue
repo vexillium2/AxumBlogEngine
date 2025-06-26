@@ -1,0 +1,253 @@
+<template>
+  <div>
+    <h2 class="card-title text-center">用户注册</h2>
+
+    <form @submit.prevent="handleRegister">
+      <div class="form-group">
+        <label class="form-label">用户名</label>
+        <input
+          type="text"
+          class="form-control"
+          v-model="registerForm.username"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">邮箱</label>
+        <input
+          type="email"
+          class="form-control"
+          v-model="registerForm.email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">密码</label>
+        <input
+          type="password"
+          class="form-control"
+          v-model="registerForm.password"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">确认密码</label>
+        <input
+          type="password"
+          class="form-control"
+          v-model="registerForm.password_confirmation"
+          required
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-block"
+        @click="handleRegister"
+        :disabled="isLoading"
+      >
+        {{ isLoading ? '注册中...' : '注册' }}
+      </button>
+    </form>
+
+    <p class="text-center mt-3">
+      已有账号? <a href="#" @click="emitSwitchToLogin">立即登录</a>
+    </p>
+  </div>
+</template>
+
+<script setup>
+import { reactive, ref } from "vue";
+import { defineProps, defineEmits } from "vue";
+import { userAPI } from "../api/index.js";
+
+const registerForm = reactive({
+  username: "",
+  email: "",
+  password: "",
+  password_confirmation: "",
+});
+
+const isLoading = ref(false);
+const emits = defineEmits(["switch-to-login", "register-success"]);
+
+const emitSwitchToLogin = () => {
+  emits("switch-to-login");
+};
+
+const handleRegister = async () => {
+  // 表单验证
+  if (!registerForm.username || !registerForm.email || !registerForm.password) {
+    alert("请填写所有必填字段");
+    return;
+  }
+  
+  if (registerForm.password !== registerForm.password_confirmation) {
+    alert("两次输入的密码不一致");
+    return;
+  }
+  
+  if (registerForm.password.length < 6) {
+    alert("密码长度至少为6位");
+    return;
+  }
+  
+  isLoading.value = true;
+  
+  try {
+    const response = await userAPI.register({
+      username: registerForm.username,
+      email: registerForm.email,
+      password: registerForm.password,
+    });
+    
+    alert("注册成功！请登录");
+    emits("register-success", response);
+    emits("switch-to-login");
+    
+    // 清空表单
+    Object.keys(registerForm).forEach(key => {
+      registerForm[key] = "";
+    });
+    
+  } catch (error) {
+    console.error("注册失败:", error);
+    alert(error.message || "注册失败，请重试");
+  } finally {
+    isLoading.value = false;
+  }
+};
+</script>
+
+<style lang="less" scoped>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+  --primary: #4facfe;
+  --secondary: #a777e3;
+  --success: #43e97b;
+  --danger: #ff5858;
+  --warning: #f09819;
+  --dark: #2c3e50;
+  --light: #f8f9fa;
+  --gray: #6c757d;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+/* 卡片样式 */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.card-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+/* 表单样式 */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* 按钮样式 */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+.text-center {
+  text-align: center;
+}
+
+.mt-3 {
+  margin-top: 15px;
+}
+</style>
