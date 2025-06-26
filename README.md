@@ -125,7 +125,7 @@
 <div align="center">
 
 ### 🌟 首页展示
-<img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white](https://github.com/vexillium2/AxumBlogEngine/blob/main/WechatIMG1829.jpg?raw=true" alt="首页">
+<img src="https://github.com/vexillium2/AxumBlogEngine/blob/main/WechatIMG1829.jpg?raw=true" alt="首页">
 
 </div>
 
