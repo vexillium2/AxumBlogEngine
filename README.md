@@ -922,10 +922,10 @@ flowchart LR
 
 | 贡献者头像 | 贡献者名称 | GitHub 主页 | 负责工作 |
 | :-------: | :-------: | :---------: | :---------: |
-| <img src="https://avatars.githubusercontent.com/u/122510551?v=4" width="50px;" alt="vexillium2"> | [杜嘉康](https://github.com/vexillium2) | [访问](https://github.com/vexillium2) | 后端、系统设计说明书、系统规格说明书 |
-| <img src="https://avatars.githubusercontent.com/u/122717801?v=4" width="50px;" alt="suooous"> | [王国杰](https://github.com/suooous) | [访问](https://github.com/suooous) | 前端、api文档 |
-| <img src="https://avatars.githubusercontent.com/u/144538612?v=4" width="50px;" alt="TianJi666"> | [覃昶](https://github.com/TianJi666) | [访问](https://github.com/TianJi666) | 后端、系统测试文档 |
-| <img src="https://avatars.githubusercontent.com/u/190572270?v=4" width="50px;" alt="zzy443320"> | [钟伟明](https://github.com/zzy443320) | [访问](https://github.com/zzy443320) | 前端、展示文档 |
+| <img src="https://avatars.githubusercontent.com/u/122510551?v=4" width="50px;" alt="vexillium2"> | [杜嘉康](https://github.com/vexillium2) | [访问](https://github.com/vexillium2) | idea提出、需求与文档整理、后端 |
+| <img src="https://avatars.githubusercontent.com/u/122717801?v=4" width="50px;" alt="suooous"> | [王国杰](https://github.com/suooous) | [访问](https://github.com/suooous) | 前端、文档图表绘制、api文档 |
+| <img src="https://avatars.githubusercontent.com/u/144538612?v=4" width="50px;" alt="TianJi666"> | [覃昶](https://github.com/TianJi666) | [访问](https://github.com/TianJi666) | 后端、测试、系统测试文档 |
+| <img src="https://avatars.githubusercontent.com/u/190572270?v=4" width="50px;" alt="zzy443320"> | [钟伟明](https://github.com/zzy443320) | [访问](https://github.com/zzy443320) | 前端、测试、展示文档 |
 
 
 
