@@ -917,10 +917,19 @@ flowchart LR
 <div align="center">
 
 **感谢所有贡献者！** 🙏
+这是一个大型且复杂的开发任务，项目的成功离不开每一位成员的共同努力。💪 我们的团队成员都不仅仅局限于各自的职责，而是深度参与了项目的各个环节，并做出了平均且同等重要的贡献。🚀
 
-<a href="https://github.com/your-username/AxumBlogEngine/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=your-username/AxumBlogEngine" />
-</a>
+<br>
+
+| 贡献者头像 | 贡献者名称 | GitHub 主页 | 负责工作 |
+| :-------: | :-------: | :---------: | :---------: |
+| <img src="https://avatars.githubusercontent.com/u/122510551?v=4" width="50px;" alt="vexillium2"> | [杜嘉康](https://github.com/vexillium2) | [访问](https://github.com/vexillium2) | 后端、系统设计说明书、系统规格说明书 |
+| <img src="https://avatars.githubusercontent.com/u/122717801?v=4" width="50px;" alt="suooous"> | [王国杰](https://github.com/suooous) | [访问](https://github.com/suooous) | 前端、api文档 |
+| <img src="https://avatars.githubusercontent.com/u/144538612?v=4" width="50px;" alt="TianJi666"> | [覃昶](https://github.com/TianJi666) | [访问](https://github.com/TianJi666) | 后端、系统测试文档 |
+| <img src="https://avatars.githubusercontent.com/u/144538612?v=4" width="50px;" alt="TianJi666"> | [钟伟明](https://github.com/TianJi666) | [访问](https://github.com/TianJi666) | 前端、展示文档 |
+
+
+
 
 </div>
 
