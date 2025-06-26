@@ -120,12 +120,12 @@
 
 ---
 
-## 🎯 快速体验
+## 🎯 页面展示
 
 <div align="center">
 
-### 🌟 页面展示
-
+### 🌟 首页展示
+<img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white](https://github.com/vexillium2/AxumBlogEngine/blob/main/WechatIMG1829.jpg?raw=true" alt="首页">
 
 </div>
 
