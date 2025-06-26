@@ -128,7 +128,7 @@
 <img src="https://github.com/vexillium2/AxumBlogEngine/blob/main/WechatIMG1829.jpg?raw=true" alt="首页">
 
 ### 🌟 新建文章展示
-<img src="https://github.com/vexillium2/AxumBlogEngine/blob/main/WechatIMG1832.jpg?raw=true" alt="新建文字">]
+<img src="https://github.com/vexillium2/AxumBlogEngine/blob/main/WechatIMG1832.jpg?raw=true" alt="新建文字">
 </div>
 
 ---
