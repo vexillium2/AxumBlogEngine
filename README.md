@@ -218,7 +218,7 @@ graph TB
 
 ```bash
 # 🔄 克隆项目
-git clone https://github.com/your-username/AxumBlogEngine.git
+git clone https://github.com/vexillium2/AxumBlogEngine.git
 cd AxumBlogEngine
 
 # 🚀 一键启动开发环境
@@ -881,7 +881,7 @@ flowchart LR
 
 1. **🍴 Fork 项目**
    ```bash
-   git clone https://github.com/your-username/AxumBlogEngine.git
+   git clone https://github.com/vexillium2/AxumBlogEngine.git
    ```
 
 2. **🌿 创建特性分支**
@@ -938,11 +938,9 @@ flowchart LR
 
 | 方式 | 链接 |
 |------|------|
-| 📧 **邮箱** | [team@axumblog.com](mailto:team@axumblog.com) |
-| 💬 **讨论** | [GitHub Discussions](https://github.com/your-username/AxumBlogEngine/discussions) |
-| 🐛 **问题反馈** | [GitHub Issues](https://github.com/your-username/AxumBlogEngine/issues) |
-| 📱 **QQ群** | 123456789 |
-| 💬 **微信群** | 扫码加入 |
+| 💬 **讨论** | [GitHub Discussions](https://github.com/vexillium2/AxumBlogEngine/discussions) |
+| 🐛 **问题反馈** | [GitHub Issues](https://github.com/vexillium2/AxumBlogEngine/issues) |
+
 
 </div>
 
@@ -1057,13 +1055,13 @@ flowchart LR
 
 ### 📊 项目统计
 
-![GitHub stars](https://img.shields.io/github/stars/your-username/AxumBlogEngine?style=social)
-![GitHub forks](https://img.shields.io/github/forks/your-username/AxumBlogEngine?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/your-username/AxumBlogEngine?style=social)
+![GitHub stars](https://img.shields.io/github/stars/vexillium2/AxumBlogEngine?style=social)
+![GitHub forks](https://img.shields.io/github/forks/vexillium2/AxumBlogEngine?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/vexillium2/AxumBlogEngine?style=social)
 
-![GitHub issues](https://img.shields.io/github/issues/your-username/AxumBlogEngine)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/your-username/AxumBlogEngine)
-![GitHub last commit](https://img.shields.io/github/last-commit/your-username/AxumBlogEngine)
+![GitHub issues](https://img.shields.io/github/issues/vexillium2/AxumBlogEngine)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/vexillium2/AxumBlogEngine)
+![GitHub last commit](https://img.shields.io/github/last-commit/vexillium2/AxumBlogEngine)
 
 ---
 
