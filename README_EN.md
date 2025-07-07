@@ -38,7 +38,7 @@
 
 ### 🌐 Language Support
 
-[🇺🇸 English](README_EN.md) | [🇨🇳 中文](README.md)
+[🇺🇸 English](README_EN.md) | [🇨🇳 Chinese](README.md)
 
 </div>
 
