@@ -240,16 +240,16 @@ cd AxumBlogEngine
 <summary><strong>📦 Backend Setup</strong></summary>
 
 ```bash
-# 进入后端目录
+# Go to the backend directory
 cd backend
 
-# 🔨 构建项目
+# 🔨 Build the project
 cargo build
 
-# 🗄️ 初始化数据库
+# 🗄️ Initialize the database
 sqlite3 blogdb.db ".read init.sql"
 
-# ⚙️ 配置环境变量
+# ⚙️ Configure environment variables
 cat > .env << EOF
 DATABASE_URL=sqlite:blogdb.db
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -258,7 +258,7 @@ SERVER_PORT=3000
 BCRYPT_COST=12
 EOF
 
-# 🚀 启动后端服务
+# 🚀 Start the backend service
 cargo run --bin server
 ```
 </details>
@@ -576,17 +576,16 @@ flowchart LR
 
 <div align="center">
 
-**感谢所有贡献者！** 🙏
-这是一个大型且复杂的开发任务，项目的成功离不开每一位成员的共同努力。💪 我们的团队成员都不仅仅局限于各自的职责，而是深度参与了项目的各个环节，并做出了平均且同等重要的贡献。🚀
+**Thanks to all contributors!** 🙏 This is a large and complex development task, and the success of the project is inseparable from the joint efforts of every member. 💪 Our team members are not limited to their respective responsibilities, but are deeply involved in all aspects of the project and make an equal and equally important contribution. 🚀
 
 <br>
 
-| 贡献者头像 | 贡献者名称 | GitHub 主页 | 负责工作 |
+| Contributor Avatar | Contributor Name | GitHub Homepage | Responsible Work |
 | :-------: | :-------: | :---------: | :---------: |
-| <img src="https://avatars.githubusercontent.com/u/122510551?v=4" width="50px;" alt="vexillium2"> | [杜嘉康](https://github.com/vexillium2) | [访问](https://github.com/vexillium2) | idea提出、需求与文档整理、后端 |
-| <img src="https://avatars.githubusercontent.com/u/122717801?v=4" width="50px;" alt="suooous"> | [王国杰](https://github.com/suooous) | [访问](https://github.com/suooous) | 前端、文档图表绘制、api文档 |
-| <img src="https://avatars.githubusercontent.com/u/144538612?v=4" width="50px;" alt="TianJi666"> | [覃昶](https://github.com/TianJi666) | [访问](https://github.com/TianJi666) | 后端、测试、系统测试文档 |
-| <img src="https://avatars.githubusercontent.com/u/190572270?v=4" width="50px;" alt="zzy443320"> | [钟伟明](https://github.com/zzy443320) | [访问](https://github.com/zzy443320) | 前端、测试、展示文档 |
+| <img src="https://avatars.githubusercontent.com/u/122510551?v=4" width="50px;" alt="vexillium2"> | [杜嘉康](https://github.com/vexillium2) | [访问](https://github.com/vexillium2) | Idea Proposal, Requirements and Documentation, Back-end |
+| <img src="https://avatars.githubusercontent.com/u/122717801?v=4" width="50px;" alt="suooous"> | [王国杰](https://github.com/suooous) | [访问](https://github.com/suooous) | Front-end, Document Diagramming, API Documentation |
+| <img src="https://avatars.githubusercontent.com/u/144538612?v=4" width="50px;" alt="TianJi666"> | [覃昶](https://github.com/TianJi666) | [访问](https://github.com/TianJi666) | Back-end, Testing, System Testing Documentation. |
+| <img src="https://avatars.githubusercontent.com/u/190572270?v=4" width="50px;" alt="zzy443320"> | [钟伟明](https://github.com/zzy443320) | [访问](https://github.com/zzy443320) | Front-end, Testing, Presentation Documentation |
 
 </div>
 
